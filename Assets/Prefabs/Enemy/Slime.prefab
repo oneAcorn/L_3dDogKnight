@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 8446506645098279496}
   - component: {fileID: 8388847041773141190}
   - component: {fileID: 8388847041773141191}
+  - component: {fileID: 6186546165500699624}
   - component: {fileID: 8388847041773141188}
   m_Layer: 7
   m_Name: Slime
@@ -113,6 +114,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sightRadius: 5
+  isGuard: 0
+  lookAtTime: 0
+  patrolRange: 0
+--- !u!114 &6186546165500699624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8388223121426899366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 641470e66dd993f4691a8c785b431515, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  characterData: {fileID: 11400000, guid: 5740039c757f02f49be986997ff59d06, type: 2}
 --- !u!195 &8388847041773141188
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
 {
     private NavMeshAgent _agent;
     private Animator anim;
+    private CharacterState characterState;
 
     private GameObject attackTarget;
     private float lastAttackTime;
@@ -16,6 +17,7 @@ public class PlayerController : MonoBehaviour
     {
         _agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
+        characterState = GetComponent<CharacterState>();
     }
 
     private void Start()
