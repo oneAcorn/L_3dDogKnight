@@ -5,24 +5,13 @@ using UnityEngine;
 using UnityEngine.Events;
 
 
-public class MouseManager : MonoBehaviour
+public class MouseManager : Singleton<MouseManager>
 {
-    public static MouseManager Instance;
     public Texture2D point, doorway, attack, target, arrow;
 
     private RaycastHit hitInfo;
     public event Action<Vector3> OnMouseClick;
     public event Action<GameObject> OnEnemyClicked;
-
-    private void Awake()
-    {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-        }
-
-        Instance = this;
-    }
 
     private void Update()
     {

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = System.Random;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class PlayerController : MonoBehaviour
 
     private GameObject attackTarget;
     private float lastAttackTime;
+    private bool isDead;
 
     private void Awake()
     {
@@ -24,10 +26,16 @@ public class PlayerController : MonoBehaviour
     {
         MouseManager.Instance.OnMouseClick += MoveToTarget;
         MouseManager.Instance.OnEnemyClicked += EventAttack;
+        GameManager.Instance.RegisterPlayer(characterState);
     }
 
     private void Update()
     {
+        isDead = characterState.CurrentHealth == 0;
+        if (isDead)
+        {
+            GameManager.Instance.NotifyObservers();
+        }
         SwitchAnimation();
         lastAttackTime -= Time.deltaTime;
     }
@@ -35,21 +43,27 @@ public class PlayerController : MonoBehaviour
     private void SwitchAnimation()
     {
         anim.SetFloat("Speed", _agent.velocity.sqrMagnitude);
+        anim.SetBool("Death",isDead);
     }
 
     public void MoveToTarget(Vector3 target)
     {
         //打断攻击的Coroutine
         StopAllCoroutines();
+        if(isDead)
+            return;
         _agent.isStopped = false;
         _agent.destination = target;
     }
 
     private void EventAttack(GameObject target)
     {
+        if(isDead)
+            return;
         if (target != null)
         {
             attackTarget = target;
+            characterState.isCritical = UnityEngine.Random.value < characterState.attackData.criticalChance;
             StartCoroutine(MoveToAttackTarget());
         }
     }
@@ -59,8 +73,7 @@ public class PlayerController : MonoBehaviour
         _agent.isStopped = false;
         transform.LookAt(attackTarget.transform);
         //玩家与敌人间距离超过攻击距离1
-        //TODO: 修改攻击范围到配置
-        while (Vector3.Distance(attackTarget.transform.position, transform.position) > 1f)
+        while (Vector3.Distance(attackTarget.transform.position, transform.position) > characterState.attackData.attackRange)
         {
             _agent.destination = attackTarget.transform.position;
             yield return null;
@@ -71,9 +84,17 @@ public class PlayerController : MonoBehaviour
 
         if (lastAttackTime < 0)
         {
+            anim.SetBool("Critical",characterState.isCritical);
             anim.SetTrigger("Attack");
             //重置冷却时间
-            lastAttackTime = 0.5f;
+            lastAttackTime = characterState.attackData.coolDown;
         }
+    }
+
+    //Animation Event
+    private void Hit()
+    {
+        var targetState = attackTarget.GetComponent<CharacterState>();
+        targetState.TakeDamage(characterState,targetState);
     }
 }
