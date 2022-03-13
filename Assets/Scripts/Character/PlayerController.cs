@@ -15,11 +15,14 @@ public class PlayerController : MonoBehaviour
     private float lastAttackTime;
     private bool isDead;
 
+    private float stopDistance;
+
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         characterState = GetComponent<CharacterState>();
+        stopDistance = _agent.stoppingDistance;
     }
 
     private void Start()
@@ -36,6 +39,7 @@ public class PlayerController : MonoBehaviour
         {
             GameManager.Instance.NotifyObservers();
         }
+
         SwitchAnimation();
         lastAttackTime -= Time.deltaTime;
     }
@@ -43,22 +47,24 @@ public class PlayerController : MonoBehaviour
     private void SwitchAnimation()
     {
         anim.SetFloat("Speed", _agent.velocity.sqrMagnitude);
-        anim.SetBool("Death",isDead);
+        anim.SetBool("Death", isDead);
     }
 
     public void MoveToTarget(Vector3 target)
     {
         //打断攻击的Coroutine
         StopAllCoroutines();
-        if(isDead)
+        if (isDead)
             return;
+        //复原设置的停止距离
+        _agent.stoppingDistance = stopDistance;
         _agent.isStopped = false;
         _agent.destination = target;
     }
 
     private void EventAttack(GameObject target)
     {
-        if(isDead)
+        if (isDead)
             return;
         if (target != null)
         {
@@ -71,9 +77,12 @@ public class PlayerController : MonoBehaviour
     private IEnumerator MoveToAttackTarget()
     {
         _agent.isStopped = false;
+        //在攻击范围内停止移动
+        _agent.stoppingDistance = characterState.attackData.attackRange;
         transform.LookAt(attackTarget.transform);
         //玩家与敌人间距离超过攻击距离1
-        while (Vector3.Distance(attackTarget.transform.position, transform.position) > characterState.attackData.attackRange)
+        while (Vector3.Distance(attackTarget.transform.position, transform.position) >
+               characterState.attackData.attackRange)
         {
             _agent.destination = attackTarget.transform.position;
             yield return null;
@@ -84,7 +93,7 @@ public class PlayerController : MonoBehaviour
 
         if (lastAttackTime < 0)
         {
-            anim.SetBool("Critical",characterState.isCritical);
+            anim.SetBool("Critical", characterState.isCritical);
             anim.SetTrigger("Attack");
             //重置冷却时间
             lastAttackTime = characterState.attackData.coolDown;
@@ -94,7 +103,20 @@ public class PlayerController : MonoBehaviour
     //Animation Event
     private void Hit()
     {
-        var targetState = attackTarget.GetComponent<CharacterState>();
-        targetState.TakeDamage(characterState,targetState);
+        if (attackTarget.CompareTag("Attackable"))
+        {
+            if (attackTarget.GetComponent<Rock>())
+            {
+                attackTarget.GetComponent<Rock>().rockState = Rock.RockState.HitEnemy;
+                //初始速度本身是0,但是这样会导致状态切换为HitNothing,所以刚开始给他一个1的速度(飞行时是600多)
+                attackTarget.GetComponent<Rigidbody>().velocity = Vector3.one;
+                attackTarget.GetComponent<Rigidbody>().AddForce(transform.forward * 22, ForceMode.Impulse);
+            }
+        }
+        else
+        {
+            var targetState = attackTarget.GetComponent<CharacterState>();
+            targetState.TakeDamage(characterState, targetState);
+        }
     }
 }

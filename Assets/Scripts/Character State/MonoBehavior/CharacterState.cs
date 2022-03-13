@@ -6,6 +6,7 @@ using Random = UnityEngine.Random;
 
 public class CharacterState : MonoBehaviour
 {
+    public event Action<int, int> updateHealthBarOnAttack;
     public CharacterData_SO templateData;
     public CharacterData_SO characterData;
     public AttackData_SO attackData;
@@ -58,9 +59,26 @@ public class CharacterState : MonoBehaviour
         CurrentHealth = Mathf.Max(CurrentHealth - damage, 0);
         //TODO Update UI
         //TODO Experience Update
-        if (isCritical)
+        if (attacker.isCritical)
         {
             defener.GetComponent<Animator>().SetTrigger("Hit");
+        }
+        updateHealthBarOnAttack?.Invoke(CurrentHealth,MaxHealth);
+        if (CurrentHealth <= 0)
+        {
+            attacker.characterData.UpdateExp(characterData.killPoint);
+        }
+    }
+
+    public void TakeDamage(int damage, CharacterState defener)
+    {
+        int curDamage = Mathf.Max(damage - defener.CurrentDefence, 0);
+        CurrentHealth = Mathf.Max(CurrentHealth - curDamage, 0);
+        updateHealthBarOnAttack?.Invoke(CurrentHealth,MaxHealth);
+
+        if (CurrentHealth <= 0)
+        {
+            GameManager.Instance.playerState.characterData.UpdateExp(characterData.killPoint);
         }
     }
 
