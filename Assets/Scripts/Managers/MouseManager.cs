@@ -13,6 +13,12 @@ public class MouseManager : Singleton<MouseManager>
     public event Action<Vector3> OnMouseClick;
     public event Action<GameObject> OnEnemyClicked;
 
+    protected override void Awake()
+    {
+        base.Awake();
+        DontDestroyOnLoad(this);
+    }
+
     private void Update()
     {
         SetCursorTexture();
@@ -34,6 +40,12 @@ public class MouseManager : Singleton<MouseManager>
                 case "Enemy":
                     Cursor.SetCursor(attack, new Vector2(16, 16), CursorMode.Auto);
                     break;
+                case "Portal":
+                    Cursor.SetCursor(doorway, new Vector2(16, 16), CursorMode.Auto);
+                    break;
+                default:
+                    Cursor.SetCursor(arrow, new Vector2(16, 16), CursorMode.Auto);
+                    break;
             }
         }
     }
@@ -52,6 +64,9 @@ public class MouseManager : Singleton<MouseManager>
             }else if (hitInfo.collider.gameObject.CompareTag("Attackable"))
             {
                 OnEnemyClicked?.Invoke(hitInfo.collider.gameObject);
+            }else if (hitInfo.collider.gameObject.CompareTag("Portal"))
+            {
+                OnMouseClick?.Invoke(hitInfo.point);
             }
         }
     }
