@@ -57,7 +57,7 @@ public class EnemyController : MonoBehaviour, IEndGameObserver
         remainLookAtTime = lookAtTime;
     }
 
-    private void Start()
+    protected virtual void Start()
     {
         if (isGuard)
         {
@@ -86,7 +86,7 @@ public class EnemyController : MonoBehaviour, IEndGameObserver
         GameManager.Instance.RemoveObserver(this);
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         if (characterState.CurrentHealth == 0)
         {

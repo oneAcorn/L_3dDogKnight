@@ -24,10 +24,7 @@ public class Rock : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        //初始速度本身是0,但是这样会导致状态切换为HitNothing,所以刚开始给他一个1的速度(飞行时是600多)
-        rb.velocity = Vector3.one;
-        rockState = RockState.HitPlayer;
-        FlyToTarget();
+        rockState = RockState.HitNothing;
     }
 
     private void FixedUpdate()
@@ -39,7 +36,15 @@ public class Rock : MonoBehaviour
         }
     }
 
-    public void FlyToTarget()
+    public void Shoot()
+    {
+        //初始速度本身是0,但是这样会导致状态切换为HitNothing,所以刚开始给他一个1的速度(飞行时是600多)
+        rb.velocity = Vector3.one;
+        rockState = RockState.HitPlayer;
+        FlyToTarget();
+    }
+
+    private void FlyToTarget()
     {
         if (target == null)
         {
